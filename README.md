@@ -1,4 +1,4 @@
-# 🚀 Project Laravel 8 – PHP 7.4 – MySQL 8 with Cloudflare Tunnel Deployment
+# 🚀 Project Laravel 8 – PHP 7.4.33 – MySQL 8 with Cloudflare Tunnel Deployment
 
 Project ini dikembangkan menggunakan:
 
@@ -83,6 +83,8 @@ Buat database:
 ```sql
 CREATE DATABASE absensi;
 ```
+
+kemudian import file ```absensi-laravel.sql``` kedalam database ```absensi```. file tersebut ada pada folder ```SQL-DATABASE```
 
 ---
 
@@ -363,9 +365,24 @@ Pull request dan issue sangat diterima!
 
 # 📄 Dokumentasi
 webcam.js (camera) akan berjalan jika server(hosting) sudah punya domain yang sudah SSL (https)
-- <img width="1366" height="733" alt="image" src="https://github.com/user-attachments/assets/42761536-592e-4e40-87ab-f4c0251e0c6e" />
-- <img width="1359" height="728" alt="image" src="https://github.com/user-attachments/assets/bba69b2f-bed5-43c9-a5f5-8f2f4770b7b8" />
-- <img width="1365" height="721" alt="image" src="https://github.com/user-attachments/assets/20b3797e-ec56-4aaf-bd3f-3997269e9744" />
+## 1. <img width="1366" height="733" alt="image" src="https://github.com/user-attachments/assets/42761536-592e-4e40-87ab-f4c0251e0c6e" />
+## 2. <img width="1359" height="728" alt="image" src="https://github.com/user-attachments/assets/bba69b2f-bed5-43c9-a5f5-8f2f4770b7b8" />
+## 3. <img width="1365" height="721" alt="image" src="https://github.com/user-attachments/assets/20b3797e-ec56-4aaf-bd3f-3997269e9744" />
+## 4. ![WhatsApp Image 2025-11-22 at 23 37 23](https://github.com/user-attachments/assets/580aff4a-6c2d-4bc8-ad6e-6cac412e5592)
+## 5. ![WhatsApp Image 2025-11-22 at 23 37 51](https://github.com/user-attachments/assets/0b220777-720d-4bda-b903-fd323522c4dd)
+## 6. ![WhatsApp Image 2025-11-22 at 23 37 51 (1)](https://github.com/user-attachments/assets/d23f40b8-05db-435d-8499-cf56819e1052)
+## 7. ![WhatsApp Image 2025-11-22 at 23 37 51 (2)](https://github.com/user-attachments/assets/cdf0b17d-113c-43cc-a914-fc38ccea4bf8)
+## 8. ![WhatsApp Image 2025-11-22 at 23 37 52](https://github.com/user-attachments/assets/249d6715-79d1-4e1f-909e-217f48ae0243)
+
+
+
+Login SuperAdmin 
+```bash
+- user : admin
+- pass : admin123
+```
+
+
 
 
 
