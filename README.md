@@ -1,4 +1,377 @@
-Project ini di develop menggunakan php 7.4.33 , Laravel Framework 8.83.23, mysql Ver 8.0.44-0ubuntu0.22.04.1 for Linux on x86_64 ((Ubuntu))
+# 🚀 Project Laravel 8 – PHP 7.4 – MySQL 8 with Cloudflare Tunnel Deployment
+
+Project ini dikembangkan menggunakan:
+
+- **PHP**: 7.4.33  
+- **Laravel Framework**: 8.83.23  
+- **MySQL**: 8.0.44 (Ubuntu)  
+- **OS Server**: Ubuntu 22.04 x86_64  
+- **Web Exposure**: Cloudflare Tunnel (tanpa IP Publik)
+
+---
+
+## 📁 Struktur Utama
+
+- `/app` – Source code Laravel
+- `/routes` – Route web & API
+- `.env` – Environment configuration
+- `/public` – Public web root
+- `/database` – Migration & Seeder
+
+---
+
+# ⚙️ 1. Persiapan Server
+
+Pastikan VPS menggunakan:
+
+```
+Ubuntu 22.04 LTS
+```
+
+Update sistem:
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+Install dependency dasar:
+
+```bash
+sudo apt install -y curl zip unzip git software-properties-common
+```
+
+---
+
+# 🧩 2. Install PHP 7.4
+
+Tambahkan repository:
+
+```bash
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+```
+
+Install PHP 7.4 + extension Laravel:
+
+```bash
+sudo apt install -y php7.4 php7.4-cli php7.4-common php7.4-fpm php7.4-mysql \
+php7.4-xml php7.4-mbstring php7.4-curl php7.4-zip php7.4-bcmath php7.4-gd
+```
+
+Cek versi:
+
+```bash
+php -v
+```
+
+---
+
+# 🛢 3. Install MySQL 8
+
+```bash
+sudo apt install mysql-server -y
+```
+
+Cek:
+
+```bash
+mysql --version
+```
+
+Buat database:
+
+```sql
+CREATE DATABASE absensi;
+```
+
+---
+
+# 📦 4. Clone Project
+
+```bash
+git clone https://github.com/hanissiddiq/aplikasi-absensi-hnis.git
+cd project
+```
+
+Install Composer dependencies:
+
+```bash
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+```
+```bash
+php -r "if (hash_file('SHA384', 'composer-setup.php') === trim(file_get_contents('https://composer.github.io/installer.sig'))) { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+```
+```bash
+sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+```
+cek apakah composer berhasil di install. cara diatas untuk php 7.4.33
+```bash
+composer --version
+```
+
+atau
+```bash
+composer install
+```
+
+Copy environment:
+
+```bash
+cp .env.example .env
+```
+
+Generate key:
+
+```bash
+php artisan key:generate
+```
+
+Set konfigurasi database di file `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=absensi
+DB_USERNAME=root
+DB_PASSWORD=yourpassword
+```
+
+jika muncul tampilan seperti berikut ketika login. 
+<img width="1230" height="337" alt="image" src="https://github.com/user-attachments/assets/cf3790e9-e67c-4a8b-9e50-ab7ee676f1ea" />
+maka ikuti step berikut :
+1. pada VPS masuk ke MYSQL dengan cara ```mysql -u root -p```
+   kemudian
+```bash
+CREATE DATABASE absensi;
+CREATE USER 'absensi'@'127.0.0.1' IDENTIFIED BY 'absensi123';
+GRANT ALL PRIVILEGES ON absensi.* TO 'absensi'@'127.0.0.1';
+FLUSH PRIVILEGES;
+```
+setelah semuanya selesai maka ubahlah ```.env``` menjadi
+
+```bash
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=absensi
+DB_USERNAME=absensi
+DB_PASSWORD=absensi123
+```
+
+Migrasi database:
+
+```bash
+php artisan migrate --seed
+```
+
+---
+
+# 🌐 5. Setup Cloudflare Tunnel (Tanpa IP Publik)
+
+Metode ini aman & tidak membutuhkan port forwarding atau IP publik.
+
+## 5.1 Install Cloudflared
+
+```bash
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared-linux-amd64.deb
+sudo apt --fix-broken install -y
+```
+
+## 5.2 Login Cloudflare via VPS(hosting)
+
+```bash
+cloudflared tunnel login
+```
+
+Salin URL yang muncul → buka di browser → pilih domain.
+
+## 5.3 Buat Tunnel
+
+```bash
+cloudflared tunnel create vps-tunnel
+```
+
+Akan menghasilkan file:
+
+```
+/root/.cloudflared/<tunnel-id>.json
+```
+
+## 5.4 Buat DNS Routing
+
+```bash
+cloudflared tunnel route dns vps-tunnel subdomain.domainkamu.com(domain yang sudah kamu beli contoh hnis.myid)
+```
+
+## 5.5 Konfigurasi `config.yml`
+
+Edit:
+
+```bash
+sudo nano /etc/cloudflared/config.yml
+```
+
+Isi:
+
+```yaml
+tunnel: vps-tunnel
+credentials-file: /root/.cloudflared/<tunnel-id>.json
+
+ingress:
+  - hostname: subdomain.domainkamu.com
+    service: http://localhost:80
+  - service: http_status:404
+```
+
+## 5.6 Install & enable sebagai service
+
+```bash
+sudo cloudflared service install
+sudo systemctl start cloudflared
+sudo systemctl enable cloudflared
+```
+
+Cek status:
+
+```bash
+systemctl status cloudflared
+```
+
+Harus **active (running)**.
+
+---
+
+# 🌍 6. Setup Web Server (Nginx)
+
+Install Nginx:
+
+```bash
+sudo apt install nginx -y
+```
+
+Buat config:
+
+```bash
+sudo nano /etc/nginx/sites-available/aplikasi-absensi-hnis
+```
+
+Isi:
+
+```nginx
+server {
+    listen 80;
+    server_name localhost;
+
+    root /var/www/aplikasi-absensi-hnis/public;
+
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+    }
+}
+```
+atau ikuti documentasi nginx untuk laravel 8 seperti berikut :
+```bash
+server {
+    listen 80;
+    listen [::]:80;
+    server_name localhost;
+    root /var/www/aplikasi-absensi-hnis/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+Aktifkan config:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/aplikasi-absensi-hnis /etc/nginx/sites-enabled/
+sudo systemctl restart nginx
+```
+
+---
+
+# 🚀 7. Jalankan Laravel di Production
+
+Set permission:
+
+```bash
+sudo chown -R www-data:www-data /var/www/project
+sudo chmod -R 775 /var/www/project/storage
+sudo chmod -R 775 /var/www/project/bootstrap/cache
+```
+
+Set environment:
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+---
+
+# 🎉 Aplikasi Siap Digunakan
+
+Akses melalui:
+
+```
+https://subdomain.domainkamu.com
+```
+
+Semua trafik akan melewati Cloudflare Tunnel → aman dan tanpa IP publik.
+
+---
+
+# 🤝 Kontribusi
+
+Pull request dan issue sangat diterima!
+
+---
+
+# 📄 Dokumentasi
+webcam.js (camera) akan berjalan jika server(hosting) sudah punya domain yang sudah SSL (https)
+- <img width="1366" height="733" alt="image" src="https://github.com/user-attachments/assets/42761536-592e-4e40-87ab-f4c0251e0c6e" />
+- <img width="1359" height="728" alt="image" src="https://github.com/user-attachments/assets/bba69b2f-bed5-43c9-a5f5-8f2f4770b7b8" />
+- <img width="1365" height="721" alt="image" src="https://github.com/user-attachments/assets/20b3797e-ec56-4aaf-bd3f-3997269e9744" />
+
+
+
+
+Project ini menggunakan lisensi bebas sesuai kebutuhan Anda.
+
 
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
